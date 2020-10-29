@@ -1,0 +1,42 @@
+<resources>
+    <string name="app_name">WorkReport</string>
+    <string name="action_settings">Settings</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+
+    <string name="hello_first_fragment">Hello first fragment</string>
+    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+    <string name="content_description_image">image</string>
+    <string name="login_description_text">Login</string>
+    <string name="pin_hint_text">PIN</string>
+    <string name="user_id_hint_text">User Id:</string>
+    <string name="login_title_text">Login</string>
+    <string name="current_jobs_title_text">Current Jobs</string>
+    <string name="job_name_hint_text">Job Name:</string>
+    <string name="job_details_optional_hint_text">Job Details (optional):</string>
+    <string name="create_btn_text">Create</string>
+    <string name="clear_btn_text">Clear</string>
+    <string name="create_job_title_text">Create Job</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="start_button_text">START</string>
+    <string name="finish_button_text">FINISH</string>
+    <string name="rememember_me_text">Rememember me?</string>
+    <string name="sign_up_button_text">SIGN UP</string>
+    <string name="houses_completed_static_text">Houses completed</string>
+    <string name="click_start_when_starting_a_house_text">Click start when starting a house</string>
+    <string name="done_text">DONE</string>
+    <string name="how_many_pieces_title_text">How many pieces?</string>
+    <string name="number_of_pieces_hint_text">Number of pieces:</string>
+    <string name="pieces_completed_string">Pieces Completed</string>
+    <string name="textview_placeholder_text">TextView</string>
+    <string name="_0_text">0</string>
+    <string name="house_started_text">House started</string>
+    <string name="change_phone_text">Change Phone #</string>
+    <string name="house_started_string">HOUSE STARTED</string>
+    <string name="record_text">Record:</string>
+    <string name="view_record_text">View Record</string>
+</resources>

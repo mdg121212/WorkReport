@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/mnu_change_number"
+        android:title="@string/change_phone_text" />
+    <item
+        android:id="@+id/mnu_view_record"
+        android:title="@string/view_record_text" />
+</menu>

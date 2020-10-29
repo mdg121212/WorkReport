@@ -1,0 +1,10 @@
+<resources>
+    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="login_text_margin">36dp</dimen>
+    <dimen name="login_button_margin">24dp</dimen>
+    <dimen name="card_corners">15dp</dimen>
+    <dimen name="card_height">15dp</dimen>
+    <dimen name="login_button_width">150dp</dimen>
+    <dimen name="standard_button_width">100dp</dimen>
+
+</resources>
