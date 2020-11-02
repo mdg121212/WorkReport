@@ -39,4 +39,5 @@
     <string name="house_started_string">HOUSE STARTED</string>
     <string name="record_text">Record:</string>
     <string name="view_record_text">View Record</string>
+    <string name="sign_out">Sign Out</string>
 </resources>

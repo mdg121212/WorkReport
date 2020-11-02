@@ -15,6 +15,10 @@
             android:id="@+id/action_signInFragment_to_mainFragment"
             app:destination="@id/mainFragment"
             />
+        <argument
+            android:name="isSignOut"
+            app:argType="boolean"
+            android:defaultValue="false" />
     </fragment>
     <fragment
         android:id="@+id/signUpFragment"
@@ -36,5 +40,9 @@
         <argument
             android:name="pin"
             app:argType="integer" />
+        <action
+            android:id="@+id/action_mainFragment_to_signInFragment"
+            app:destination="@id/signInFragment"
+            app:popUpTo="@id/signInFragment" />
     </fragment>
 </navigation>

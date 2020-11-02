@@ -10,11 +10,13 @@ import android.util.Log
 import android.view.*
 import android.widget.EditText
 import android.widget.Toast
+import androidx.activity.addCallback
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.mattg.aztecworkreport.R
-import com.mattg.aztecworkreport.helpers.BaseFragment
 import com.mattg.aztecworkreport.db.UserDatabase
 import com.mattg.aztecworkreport.db.UserRepository
+import com.mattg.aztecworkreport.helpers.BaseFragment
 import kotlinx.android.synthetic.main.dialog_show_record.view.*
 import kotlinx.android.synthetic.main.fragment_main.*
 import kotlinx.android.synthetic.main.number_change_dialog.view.*
@@ -24,7 +26,6 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.Calendar.getInstance
-
 
 
 class MainFragment : BaseFragment() {
@@ -37,7 +38,7 @@ class MainFragment : BaseFragment() {
     private var startTimeMinute = ""
     private var userNameToSave = ""
     private var statString = ""
-    private var isStarted : Boolean = false
+    private var isStarted: Boolean = false
 
     //for args
     private val args: MainFragmentArgs by navArgs()
@@ -45,19 +46,25 @@ class MainFragment : BaseFragment() {
 
     private lateinit var mViewModel: MainViewModel
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        requireActivity().onBackPressedDispatcher.addCallback(this) {
+            requireActivity().moveTaskToBack(true)
+            requireActivity().finish()
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        setHasOptionsMenu(true)
 
+        setHasOptionsMenu(true)
 
         val userDao = UserDatabase.getInstance(requireContext()).userDao()
         val userRepository = UserRepository(userDao)
+
         mViewModel = MainViewModel(userRepository, args.name)
-
-
 
         return inflater.inflate(R.layout.fragment_main, container, false)
     }
@@ -67,33 +74,56 @@ class MainFragment : BaseFragment() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when(item.itemId){
+        when (item.itemId) {
             R.id.mnu_change_number -> {
                 val view = layoutInflater.inflate(R.layout.number_change_dialog, null)
                 val editText = view.et_new_number
-                AlertDialog.Builder(requireContext()).setTitle("Enter new number for supervisor").setView(view)
-                    .setPositiveButton("Save"){ _, _ ->
-                        if(editText.text.toString().length == 10){
+                AlertDialog.Builder(requireContext()).setTitle("Enter new number for supervisor")
+                    .setView(view)
+                    .setPositiveButton("Save") { _, _ ->
+                        if (editText.text.toString().length == 10) {
                             val newNumber = editText.text.toString()
                             val newNumberFormat = "+1$newNumber"
 
                             coroutineScope.launch {
                                 mViewModel.setSuperNumber(newNumberFormat, args.name)
                             }
-                            Toast.makeText(requireContext(), "Number successfully changed!\nNew number: $newNumberFormat", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                requireContext(),
+                                "Number successfully changed!\nNew number: $newNumberFormat",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         } else {
-                            Toast.makeText(requireContext(), "Number not changed, must enter a 10 digit phone number.  ", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                requireContext(),
+                                "Number not changed, must enter a 10 digit phone number.  ",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
-                    .setNegativeButton("Cancel"){ dialog, _ ->
+                    .setNegativeButton("Cancel") { dialog, _ ->
                         dialog.dismiss()
                     }.show()
             }
             R.id.mnu_view_record -> {
                 showRecordDialog()
             }
+            R.id.mnu_sign_out -> {
+                showSignOutDialog()
+            }
         }
         return true
+    }
+
+    private fun showSignOutDialog() {
+        AlertDialog.Builder(requireContext()).setTitle("Sign Out?")
+            .setPositiveButton("Yes") { _, _ ->
+                val action = MainFragmentDirections.actionMainFragmentToSignInFragment(true)
+                findNavController().navigate(action)
+            }
+            .setNegativeButton("No") { dialog, _ ->
+                dialog.dismiss()
+            }.show()
     }
 
 
@@ -124,24 +154,24 @@ class MainFragment : BaseFragment() {
         })
 
         mViewModel.retrievedStats.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
-           statString = it
+            statString = it
         })
 
         mViewModel.retrievedIsStarted.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
 
-          isStarted = it
-            if(it == true){
+            isStarted = it
+            if (it == true) {
                 tv_isStarted.text = getString(R.string.house_started_string)
                 startButton.isClickable = false
                 finishButton.isClickable = true
 
-            } else if (it ==false) {
+            } else if (it == false) {
                 tv_isStarted.text = ""
                 startTime = ""
                 startButton.isClickable = true
                 finishButton.isClickable = false
             }
-            })
+        })
 
 
         btn_main_start.setOnClickListener {
@@ -170,43 +200,44 @@ class MainFragment : BaseFragment() {
             btn_main_finish.isClickable = true
         }
         //finish click listener
-            btn_main_finish.setOnClickListener {
-                houseNumber++
-                val simpleDateFormat = SimpleDateFormat("HH:mm", Locale.US)
-                val endingTime: Date = getInstance().time
+        btn_main_finish.setOnClickListener {
+            houseNumber++
+            val simpleDateFormat = SimpleDateFormat("HH:mm", Locale.US)
+            val endingTime: Date = getInstance().time
 
-                val formattedTimeTwo = simpleDateFormat.format(endingTime)
-                Log.d("TEST", formattedTimeTwo)
-                endTime = formattedTimeTwo.toString()
+            val formattedTimeTwo = simpleDateFormat.format(endingTime)
+            Log.d("TEST", formattedTimeTwo)
+            endTime = formattedTimeTwo.toString()
 
-                val houseString = "House $houseNumber:\n Started at: $startTime\n Finished at: $endTime "
-                showPiecesNumberDialog()
-                //updating the job via viewModel
-                coroutineScope.launch {
-                    mViewModel.isStarted(false, args.name)
-                    mViewModel.userFinishTime(endTime, args.name)
-                    mViewModel.userHouseNumber(houseNumber, args.name)
-                    mViewModel.userPiecesNumber(pieces, args.name)
-                    val startSplit = mViewModel.splitTimes(startTime)
-                    val endSplit = mViewModel.splitTimes(endTime)
-                    val startHour = startSplit[0]
-                    val startMinute = startSplit[1]
-                    val endHour = endSplit[0]
-                    val endMinute = endSplit[1]
-                    val endHoursInt = endHour.toInt() - startHour.toInt()
-                    val endMinutesInt = endMinute.toInt() - startMinute.toInt()
-                    //track hours and minutes totaling up before a reset
-                    mViewModel.hoursTotal += endHoursInt
-                    mViewModel.minutesTotal += endMinutesInt
-                    //add to result string
-                    mViewModel.setResultStats(houseString, args.name)
-
-                }
-
-                btn_main_start.isClickable = true
-                btn_main_finish.isClickable = false
+            val houseString =
+                "House $houseNumber:\n Started at: $startTime\n Finished at: $endTime "
+            showPiecesNumberDialog()
+            //updating the job via viewModel
+            coroutineScope.launch {
+                mViewModel.isStarted(false, args.name)
+                mViewModel.userFinishTime(endTime, args.name)
+                mViewModel.userHouseNumber(houseNumber, args.name)
+                mViewModel.userPiecesNumber(pieces, args.name)
+                val startSplit = mViewModel.splitTimes(startTime)
+                val endSplit = mViewModel.splitTimes(endTime)
+                val startHour = startSplit[0]
+                val startMinute = startSplit[1]
+                val endHour = endSplit[0]
+                val endMinute = endSplit[1]
+                val endHoursInt = endHour.toInt() - startHour.toInt()
+                val endMinutesInt = endMinute.toInt() - startMinute.toInt()
+                //track hours and minutes totaling up before a reset
+                mViewModel.hoursTotal += endHoursInt
+                mViewModel.minutesTotal += endMinutesInt
+                //add to result string
+                mViewModel.setResultStats(houseString, args.name)
 
             }
+
+            btn_main_start.isClickable = true
+            btn_main_finish.isClickable = false
+
+        }
 
 
 
@@ -218,7 +249,7 @@ class MainFragment : BaseFragment() {
                     mViewModel.piecesTotal = pieces
 
                     var ratio = mViewModel.getPiecesPerHour()
-                    if(ratio > 75){
+                    if (ratio > 75) {
                         ratio = 0
                     }
                     composeMessageAndSend(ratio)
@@ -263,11 +294,11 @@ class MainFragment : BaseFragment() {
         startActivity(intent)
     }
 
-    private fun showRecordDialog(){
+    private fun showRecordDialog() {
         //get the file
-        val fileToSave = File(requireContext().filesDir, "storedStats.txt" )
+        val fileToSave = File(requireContext().filesDir, "storedStats.txt")
 
-        if(fileToSave.exists()) {
+        if (fileToSave.exists()) {
             //generate text from the file
             val text = fileToSave.readText()
 
@@ -282,27 +313,33 @@ class MainFragment : BaseFragment() {
                 dialog.dismiss()
             }
                 .setNegativeButton("Delete") { _, _ ->
-                   AlertDialog.Builder(requireContext()).setTitle("Delete record?").setPositiveButton("Yes"){ _, _ ->
-                       fileToSave.delete()
-                       Toast.makeText(requireContext(), "Record deleted", Toast.LENGTH_SHORT).show()
-                   }
-                       .setNegativeButton("Cancel"){ dialog, _ ->
-                           dialog.dismiss()
-                       }.show()
+                    AlertDialog.Builder(requireContext()).setTitle("Delete record?")
+                        .setPositiveButton("Yes") { _, _ ->
+                            fileToSave.delete()
+                            Toast.makeText(requireContext(), "Record deleted", Toast.LENGTH_SHORT)
+                                .show()
+                        }
+                        .setNegativeButton("Cancel") { dialog, _ ->
+                            dialog.dismiss()
+                        }.show()
 
                 }
                 .setNeutralButton("Email Result") { _, _ ->
                     AlertDialog.Builder(requireContext()).setTitle("Send results as email?")
-                        .setPositiveButton("Yes"){ _, _ ->
+                        .setPositiveButton("Yes") { _, _ ->
                             val emailIntent = generateEmailIntent(text)
 
                             try {
                                 startActivity(emailIntent)
-                            }catch (e: Error){
-                                Toast.makeText(requireContext(), "Error sending: ${e.cause}", Toast.LENGTH_SHORT).show()
+                            } catch (e: Error) {
+                                Toast.makeText(
+                                    requireContext(),
+                                    "Error sending: ${e.cause}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         }
-                        .setNegativeButton("Cancel"){ dialog, _ ->
+                        .setNegativeButton("Cancel") { dialog, _ ->
                             dialog.dismiss()
                         }.show()
                 }.show()
@@ -322,6 +359,7 @@ class MainFragment : BaseFragment() {
     }
 
     override fun onDestroy() {
+        //saving relevant variables if this is destroyed
         coroutineScope.launch {
             mViewModel.userStartTime(startTime, args.name)
             mViewModel.saveAllStats(args.name)
