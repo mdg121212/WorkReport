@@ -7,6 +7,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import com.mattg.aztecworkreport.models.User
 import com.mattg.aztecworkreport.db.UserRepository
+import java.util.*
 
 
 import kotlin.math.ceil
@@ -41,6 +42,17 @@ class MainViewModel(private val userRepository: UserRepository, name: String) : 
     var minutesTotal: Int = 0
     var piecesTotal: Int = 0
 
+    @ExperimentalStdlibApi
+    fun getFormattedName() : String{
+        val nameString = retrievedUser.value!!.userName.toString()
+        val split = nameString.split(" ")
+        var newNameString = ""
+
+            for(string in split){
+                newNameString += string.capitalize(Locale.ROOT) + " "
+        }
+        return newNameString
+    }
 
     fun getPiecesPerHour(): Int {
 

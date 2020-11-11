@@ -137,7 +137,9 @@ class MainFragment : BaseFragment() {
         userNameToSave = args.name
 
         mViewModel.retrievedUser.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
-            tv_name_text.text = it.userName.toString().capitalize(Locale.ROOT)
+            val nameString = mViewModel.getFormattedName()
+            userNameToSave = nameString
+            tv_name_text.text = nameString
             tv_house_number.text = it.housesDone.toString()
             //retrieving the start time
             startTime = it.currentJobStartTime.toString()
@@ -279,9 +281,7 @@ class MainFragment : BaseFragment() {
         val fileToSave = File(requireContext().filesDir, "storedStats.txt")
         fileToSave.appendText("\n\n$stringToSend")
         //text intent
-        /**
-         *
-         */
+
         composeMessage(stringToSend, number!!)
     }
 
